@@ -1,135 +1,123 @@
-import { ConsentProviderWithoutCookies, useConsent } from '../index'
-import { fireEvent, render, screen } from '@testing-library/react'
 
 import '@testing-library/jest-dom/extend-expect'
 
-describe('<ConsentProviderWithoutCookies />', () => {
-  const renderConsentProvider = (consent = null, onAcceptConsent = jest.fn()) => {
-    return render(<ConsentProviderWithoutCookies consent={consent} setConsent={onAcceptConsent} />)
-  }
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
-  test('it does not render if all is accepted', () => {
-    renderConsentProvider({ preference: true, analytics: true })
-    expect(screen.queryByText('Cookies')).not.toBeInTheDocument()
+import { useState } from 'react'
+
+import * as nookies from 'nookies'
+
+import { withNookies, COOKIE_DEFAULTS } from '../src/index'
+
+import ConsentProviderWithCookies from '../src'
+
+jest.mock('nookies')
+
+const Component = ({ consent, children, setConsent }) => {
+  const [analytics, setAnalytics] = useState(!!consent?.analytics)
+  const [preference, setPreference] = useState(!!consent?.preference)
+
+  return consent ? (
+    <form>
+      <input
+        checked={analytics}
+        type="checkbox"
+        id="analytics"
+        onChange={(e) => setAnalytics(e.target.checked)}
+      />
+      <label htmlFor="analytics">Analytics</label>
+
+      <input
+        checked={preference}
+        type="checkbox"
+        id="preference"
+        onChange={(e) => setPreference(e.target.checked)}
+      />
+      <label htmlFor="preference">Preference</label>
+      <input
+        type="submit"
+        value="Save"
+        onClick={(e) => {
+          e.preventDefault()
+          setConsent({ analytics, preference })
+        }}
+      />
+      <div>{children}</div>
+    </form>
+  ) : null
+}
+
+const ComponentWithNookies = withNookies(Component)
+
+describe('withNookies', () => {
+  it("renders component's children", async () => {
+    const consent = render(
+      <ComponentWithNookies>
+        <div>Test</div>
+      </ComponentWithNookies>
+    )
+    expect(await consent.findByText('Test')).toBeInTheDocument()
   })
 
-  test('it does not render if no data is loaded', () => {
-    renderConsentProvider()
-    expect(screen.queryByText('Cookies')).not.toBeInTheDocument()
-  })
-
-  test('it renders if none is allowed', () => {
-    renderConsentProvider({})
-    expect(screen.getByText('Cookies')).toBeInTheDocument()
-  })
-
-  test('it renders if only preference cookies are allowed', () => {
-    renderConsentProvider({ preference: true })
-    expect(screen.getByText('Cookies')).toBeInTheDocument()
-  })
-
-  test('it renders if only analytics cookies are allowed', () => {
-    renderConsentProvider({ analytics: true })
-    expect(screen.getByText('Cookies')).toBeInTheDocument()
-  })
-
-  test('it sets both values when all is accepted', () => {
-    const onAcceptConsent = jest.fn()
-    const consentProvider = renderConsentProvider({}, onAcceptConsent)
-    const button = consentProvider.getByText('Accept All')
-
-    fireEvent.click(button)
-
-    expect(onAcceptConsent.mock.calls[0][0].analytics).toBe(true)
-    expect(onAcceptConsent.mock.calls[0][0].preference).toBe(true)
-  })
-
-  describe('preferences are open', () => {
-    let onAcceptConsent, consentProvider
-
-    beforeEach(() => {
-      onAcceptConsent = jest.fn()
-      consentProvider = renderConsentProvider({}, onAcceptConsent)
-      fireEvent.click(consentProvider.getByText('Manage'))
-    })
-
-    test('it displays preferences', () => {
-      expect(consentProvider.getByText('Cookies Preferences')).toBeInTheDocument()
-
-      expect(consentProvider.getByLabelText('Required Cookies').checked).toBe(true)
-      expect(consentProvider.getByLabelText('Preference Cookies').checked).toBe(false)
-      expect(consentProvider.getByLabelText('Web Analytics Cookies').checked).toBe(false)
-    })
-
-    describe('only Analytics is accepted', () => {
-      beforeEach(() => {
-        fireEvent.click(consentProvider.getByLabelText('Web Analytics Cookies'))
-        fireEvent.click(consentProvider.getByText('Save'))
-      })
-
-      test('checkbox for Analytics should be checked', () => {
-        expect(consentProvider.getByLabelText('Web Analytics Cookies').checked).toBe(true)
-      })
-
-      test('it sets proper values', () => {
-        expect(onAcceptConsent.mock.calls[0][0].analytics).toBe(true)
-        expect(onAcceptConsent.mock.calls[0][0].preference).toBe(false)
-      })
-    })
-
-    describe('only Preference value accepted', () => {
-      beforeEach(() => {
-        fireEvent.click(screen.getByLabelText('Preference Cookies'))
-        fireEvent.click(screen.getByText('Save'))
-      })
-
-      test('checkbox for Preference should be checked', () => {
-        expect(consentProvider.getByLabelText('Preference Cookies').checked).toBe(true)
-      })
-
-      test('it sets proper values', () => {
-        expect(onAcceptConsent.mock.calls[0][0].analytics).toBe(false)
-        expect(onAcceptConsent.mock.calls[0][0].preference).toBe(true)
-      })
-    })
-  })
-
-  describe('useConsent', () => {
-    const renderConsentProvider = ({ analytics, preference }) => {
-      const ChildComponent = () => {
-        const consent = useConsent()
-
-        return (
-          <>
-            {consent.analytics ? <div data-testid="analytics">Analytics</div> : null}
-            {consent.preference ? <div data-testid="preference">Preference</div> : null}
-          </>
-        )
+  test('it passes Analytics cookie setting from cookies', async () => {
+    nookies.parseCookies.mockImplementation(() => {
+      return {
+        analytics_consent: '1',
       }
-
-      return render(
-        <ConsentProviderWithoutCookies consent={{ analytics, preference }} setConsent={jest.fn()}>
-          <ChildComponent />
-        </ConsentProviderWithoutCookies>
-      )
-    }
-
-    test('it provides child component with analytics setting', () => {
-      const consent = renderConsentProvider({ analytics: true, preference: false })
-      expect(consent.getByTestId('analytics')).toBeInTheDocument()
-      expect(consent.queryByTestId('preference')).not.toBeInTheDocument()
     })
 
-    test('it provides child component with preference setting', () => {
-      const consent = renderConsentProvider({ analytics: false, preference: true })
-      expect(consent.queryByTestId('analytics')).not.toBeInTheDocument()
-      expect(consent.getByTestId('preference')).toBeInTheDocument()
+    const consent = render(<ComponentWithNookies />)
+
+    waitFor(() => {
+      expect(consent.getByLabelText('Analytics').checked).toBe(true)
     })
 
-    test('it provides child component with preference and analytics setting', () => {
-      const consent = renderConsentProvider({ analytics: true, preference: true })
-      expect(consent.getByTestId('analytics')).toBeInTheDocument()
-      expect(consent.getByTestId('preference')).toBeInTheDocument()
+    expect(consent.getByLabelText('Preference').checked).toBe(false)
+  })
+
+  test('it passes Preferences cookie setting from cookies', async () => {
+    nookies.parseCookies.mockImplementation(() => {
+      return {
+        preference_consent: '1',
+      }
+    })
+    const consent = render(<ComponentWithNookies />)
+
+    waitFor(() => {
+      expect(consent.getByLabelText('Preference').checked).toBe(true)
+      expect(consent.getByLabelText('Analytics').checked).toBe(false)
+    })
+  })
+
+  describe('saving cookies', () => {
+    let consent
+    beforeEach(() => {
+      nookies.parseCookies.mockImplementation(() => ({}))
+      nookies.setCookie = jest.fn()
+    })
+
+    test('it writes Analytics cookie', async () => {
+      const consent = render(<ComponentWithNookies />)
+
+      fireEvent.click(await consent.findByLabelText('Analytics'))
+      fireEvent.click(await consent.findByText('Save'))
+
+      expect(nookies.setCookie.mock.calls[0][0]).toEqual(null)
+      expect(nookies.setCookie.mock.calls[0][1]).toEqual('analytics_consent')
+      expect(nookies.setCookie.mock.calls[0][2]).toEqual('1')
+      expect(nookies.setCookie.mock.calls[0][3]).toEqual(COOKIE_DEFAULTS)
+    })
+
+    test('it writes Preference cookie', async () => {
+      const consent = render(<ComponentWithNookies />)
+
+      fireEvent.click(await consent.findByLabelText('Preference'))
+      fireEvent.click(await consent.findByText('Save'))
+
+      expect(nookies.setCookie.mock.calls[0][0]).toEqual(null)
+      expect(nookies.setCookie.mock.calls[0][1]).toEqual('preference_consent')
+      expect(nookies.setCookie.mock.calls[0][2]).toEqual('1')
+      expect(nookies.setCookie.mock.calls[0][3]).toEqual(COOKIE_DEFAULTS)
     })
   })
 })

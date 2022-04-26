@@ -1,5 +1,10 @@
+import React, { useState, useEffect } from 'react'
+
 import { parseCookies, setCookie, destroyCookie } from 'nookies'
-import { useState, useEffect } from 'react'
+
+import ConsentProviderWithoutCookies from './components/ConsentProvider'
+
+export { useConsent } from './components/ConsentProvider'
 
 const MAX_COOKIE_AGE = 365 * 30 * 24 * 60 * 60
 
@@ -8,7 +13,7 @@ export const COOKIE_DEFAULTS = {
   path: '/',
 }
 
-export default function withNookies(Component) {
+export function withNookies(Component) {
   const PREFERENCE_COOKIE = 'preference_consent'
   const ANALYTICS_COOKIE = 'analytics_consent'
   const COOKIES_ACCEPTED = 'consent_accepted'
@@ -48,3 +53,5 @@ export default function withNookies(Component) {
     )
   }
 }
+
+export const ConsentProviderWithCookies = withNookies(ConsentProviderWithoutCookies);

@@ -1,3 +1,5 @@
+import React, { useState } from 'react'
+
 import deline from 'deline'
 
 import Link from 'next/link'
@@ -5,7 +7,6 @@ import Link from 'next/link'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 import { faCheckDouble } from '@fortawesome/free-solid-svg-icons'
-import { useState } from 'react'
 
 export const DISABLED_COOKIES_NOTICE = deline(`
   You disabled some of the Cookies so your browsing experience might be affected. Below

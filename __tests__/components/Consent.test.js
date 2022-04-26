@@ -1,7 +1,7 @@
 import Consent, {
   DISABLED_COOKIES_NOTICE,
   DEFAULT_MESSAGE,
-} from '../src/Consent'
+} from '../../src/components/Consent'
 
 import '@testing-library/jest-dom/extend-expect'
 

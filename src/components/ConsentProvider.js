@@ -1,4 +1,5 @@
-import { useContext, createContext } from 'react'
+import React, { useContext, createContext } from 'react'
+
 import Consent from './Consent'
 
 const defaultConsent = {
