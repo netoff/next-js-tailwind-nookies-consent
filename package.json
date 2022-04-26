@@ -1,0 +1,49 @@
+{
+  "name": "@netoff/next-js-tailwind-nookies-consent",
+  "version": "1.0.0",
+  "description": "Cookies Consent dialog for next.js Websites with TailwindCSS and nookies",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/netoff/next-js-tailwind-nookies-consent.git"
+  },
+  "keywords": [
+    "cookies",
+    "consent",
+    "react",
+    "nookies",
+    "tailwindcss"
+  ],
+  "author": "Dusan Pantelic <dusan@netoff.dev> (https://netoff.dev)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/netoff/next-js-tailwind-nookies-consent/issues"
+  },
+  "homepage": "https://github.com/netoff/next-js-tailwind-nookies-consent#readme",
+  "dependencies": {
+    "@babel/runtime": "^7.17.9",
+    "@fortawesome/fontawesome-svg-core": "^6.1.1",
+    "@fortawesome/free-regular-svg-icons": "^6.1.1",
+    "@fortawesome/free-solid-svg-icons": "^6.1.1",
+    "@fortawesome/react-fontawesome": "^0.1.18",
+    "deline": "^1.0.4",
+    "next": "^12.1.5",
+    "nookies": "^2.5.2",
+    "react": "^18.0.0"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.17.9",
+    "@babel/plugin-transform-runtime": "^7.17.0",
+    "@babel/preset-env": "^7.16.11",
+    "@babel/preset-react": "^7.16.7",
+    "@testing-library/jest-dom": "^5.16.4",
+    "@testing-library/react": "^13.1.1",
+    "babel-jest": "^28.0.1",
+    "jest": "^28.0.1",
+    "jest-environment-jsdom": "^28.0.1",
+    "react-test-renderer": "^18.0.0"
+  }
+}
