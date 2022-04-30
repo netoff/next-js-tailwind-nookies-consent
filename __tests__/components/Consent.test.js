@@ -5,7 +5,7 @@ import Consent, {
 
 import '@testing-library/jest-dom/extend-expect'
 
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { cleanup, fireEvent, render } from '@testing-library/react'
 
 describe('<Consent />', () => {
   const onAcceptCallback = jest.fn()

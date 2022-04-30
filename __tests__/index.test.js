@@ -9,7 +9,7 @@ import * as nookies from 'nookies'
 
 import { withNookies, COOKIE_DEFAULTS } from '../src/index'
 
-import ConsentProviderWithCookies from '../src'
+import { ConsentProviderWithCookies } from '../src'
 
 jest.mock('nookies')
 
@@ -49,6 +49,34 @@ const Component = ({ consent, children, setConsent }) => {
 
 const ComponentWithNookies = withNookies(Component)
 
+describe('<ConsentProviderWithCookies />', () =>{
+  test('it displays consent modal', async ()=>{
+    nookies.parseCookies.mockImplementation(() => {
+      return {}
+    })
+
+    const consent = render(<ConsentProviderWithCookies />)
+
+    fireEvent.click(await consent.findByText('Manage'))
+
+    expect(consent.getByText('Cookies')).toBeInTheDocument()
+  })
+
+  test('it does not display modal if cookies are set', async () => {
+    nookies.parseCookies.mockImplementation(() => {
+      return {
+        preference_consent: '1',
+        analytics_consent: '1',
+        consent_accepted: '1'
+      }
+    })
+
+    const consent = render(<ConsentProviderWithCookies />)
+
+    expect(consent.queryByText('Cookies')).not.toBeInTheDocument()
+  })
+})
+
 describe('withNookies', () => {
   it("renders component's children", async () => {
     const consent = render(
@@ -66,13 +94,10 @@ describe('withNookies', () => {
       }
     })
 
-    const consent = render(<ComponentWithNookies />)
+    const consent = render(<ComponentWithNookies consent={{}}/>)
 
-    waitFor(() => {
-      expect(consent.getByLabelText('Analytics').checked).toBe(true)
-    })
-
-    expect(consent.getByLabelText('Preference').checked).toBe(false)
+    expect(await consent.findByLabelText('Analytics').checked).toBe(true)
+    expect(await consent.findByLabelText('Preference').checked).toBe(false)
   })
 
   test('it passes Preferences cookie setting from cookies', async () => {
@@ -83,10 +108,10 @@ describe('withNookies', () => {
     })
     const consent = render(<ComponentWithNookies />)
 
-    waitFor(() => {
-      expect(consent.getByLabelText('Preference').checked).toBe(true)
-      expect(consent.getByLabelText('Analytics').checked).toBe(false)
-    })
+    // expect(await consent.findByText('Manage'))
+
+    expect(await consent.findByLabelText('Preference').checked).toBe(true)
+    expect(await consent.findByLabelText('Analytics').checked).toBe(false)
   })
 
   describe('saving cookies', () => {
