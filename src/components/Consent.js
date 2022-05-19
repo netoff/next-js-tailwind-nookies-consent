@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
-
 import deline from 'deline'
+
+import { useState } from 'react'
 
 import Link from 'next/link'
 
